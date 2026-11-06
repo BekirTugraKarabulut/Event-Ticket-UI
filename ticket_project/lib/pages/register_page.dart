@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ticket_project/pages/login_page.dart';
+import 'package:ticket_project/services/RegisterService.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -10,11 +11,12 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
 
-
+  final registerService = RegisterService();
   var usernameController = TextEditingController();
   var nameController = TextEditingController();
   var surnameController = TextEditingController();
   var passwordController = TextEditingController();
+  var phoneNumberController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -134,6 +136,31 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    cursorColor: Colors.green,
+                    style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold),
+                    controller: phoneNumberController,
+                    decoration: InputDecoration(
+                      suffixIcon: Icon(Icons.phone , color: Colors.green,),
+                      hintText: "Telefon Numarası",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      fillColor: Colors.white,
+                      filled: true,
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          borderSide: BorderSide(color: Colors.white)
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          borderSide: BorderSide(color: Colors.white)
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          borderSide: BorderSide(color: Colors.white)
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 30),
                   Container(
                     width: 150,
@@ -153,6 +180,38 @@ class _RegisterPageState extends State<RegisterPage> {
                     )
                     ,onPressed: () {
 
+                      if(usernameController.text.isEmpty || nameController.text.isEmpty || surnameController.text.isEmpty || passwordController.text.isEmpty) {
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Lütfen tüm alanları doldurun."),
+                          action: SnackBarAction(label: "Tamam", onPressed: (){}),
+                          )
+                        );
+
+                        return;
+                      }
+
+                      try{
+                        registerService.register(
+                            username: usernameController.text,
+                            name: nameController.text,
+                            surname: surnameController.text,
+                            password: passwordController.text,
+                            phoneNumber: phoneNumberController.text);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Kayıt başarılı."),
+                              action: SnackBarAction(label: "Tamam", onPressed: (){}),
+                              )
+                            );
+
+                      }catch(e){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Kayıt başarısız."),
+                              action: SnackBarAction(label: "Tamam", onPressed: (){}),
+                            )
+                        );
+                      }
                     }, child: Text("Kayıt Ol" , style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold , fontSize: 16),)),
                   ),
                   const SizedBox(height: 15),

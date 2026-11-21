@@ -64,6 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                     cursorColor: Colors.green,
                     style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold),
                     controller: passwordController,
+                    obscureText: true,
                     decoration: InputDecoration(
                       suffixIcon: Icon(Icons.lock , color: Colors.green,),
                       hintText: "Şifre",

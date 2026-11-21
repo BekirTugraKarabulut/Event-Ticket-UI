@@ -1,8 +1,10 @@
 
 import 'package:flutter/material.dart';
+import 'package:ticket_project/pages/all_event_tickets_page.dart';
+import 'package:ticket_project/pages/login_page.dart';
+import 'package:ticket_project/services/UserService.dart';
 
 class HomePage extends StatefulWidget {
-
   final String username;
 
   const HomePage({super.key, required this.username});
@@ -17,6 +19,10 @@ class _HomePageState extends State<HomePage> {
     viewportFraction: 0.65,
   );
 
+  final Userservice userService = Userservice();
+
+  Future<String>? nameFuture;
+
   final List<String> resimler = [
     "images/cok-guzel-hareketler-2.jpeg",
     "images/dogu-demirkol.jpeg",
@@ -30,6 +36,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    print("Flutter username: ${widget.username}");
+    nameFuture = userService.getNameByUsername(widget.username);
 
     pageController.addListener(() {
       setState(() {
@@ -56,37 +65,123 @@ class _HomePageState extends State<HomePage> {
             width: double.infinity,
             fit: BoxFit.cover,
           ),
+
           Container(
             color: Colors.black.withValues(alpha: 0.25),
           ),
+
           SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 15),
-                Row(mainAxisAlignment: MainAxisAlignment.start,
+
+                const SizedBox(height: 5),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text("Hoş Geldiniz, ${widget.username}!" , style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold , fontSize: 20),),
+
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: FutureBuilder<String>(
+                          future: nameFuture,
+                          builder: (context, snapshot) {
+
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Text(
+                                "Hoş Geldiniz!",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              );
+                            }
+
+                            if (snapshot.hasError) {
+                              return const Text(
+                                "Hoş Geldiniz!",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              );
+                            }
+
+                            return Text(
+                              "Hoş Geldiniz , ${snapshot.data}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: IconButton(
+                        onPressed: () {
+
+                        },
+                        icon: const Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                                (route) => false,
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.logout_outlined,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                Row(mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text("Yakın Tarihtekiler" , style: TextStyle(color: Colors.white  , fontSize: 25),),
-                  ],
+
+                const Divider(
+                  color: Colors.white,
+                  thickness: 1,
+                  height: 2,
+                  indent: 10,
+                  endIndent: 10,
                 ),
-                const SizedBox(height: 15),
+
+                const SizedBox(height: 50),
+
                 SizedBox(
                   height: 220,
                   child: PageView.builder(
                     controller: pageController,
                     itemCount: resimler.length,
                     itemBuilder: (context, index) {
+
                       double fark =
                       (aktifSayfa - index).abs();
+
                       double scale =
                       (1 - (fark * 0.25)).clamp(0.75, 1.0);
+
                       double opacity =
                       (1 - (fark * 0.55)).clamp(0.35, 1.0);
+
                       return Center(
                         child: Transform.scale(
                           scale: scale,
@@ -124,161 +219,248 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
-                const SizedBox(height: 80),
+
+                const SizedBox(height: 40),
+
                 Column(
                   children: [
-                    Container(
+                    SizedBox(
                       width: 300,
                       height: 50,
-                      child: ElevatedButton(style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(
-                              Colors.green
-                          ),
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: const WidgetStatePropertyAll(Colors.green),
                           shape: WidgetStatePropertyAll(
                             RoundedRectangleBorder(
-                                borderRadius: BorderRadiusGeometry.all(
-                                    Radius.circular(10)
-                                )
+                              borderRadius: BorderRadius.circular(10),
+                                side: const BorderSide(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                             ),
-                          )
-                      ),onPressed: () {
-
-                      }, child: const Text("🎟️ Etkinlikleri Keşfet",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 18),),),
-                    ),
-                    const SizedBox(height: 15),
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Container(
-                          width: 155,
-                          height: 50,
-                          child: ElevatedButton(style: ButtonStyle(
-                              backgroundColor: WidgetStatePropertyAll(
-                                  Colors.green
-                              ),
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadiusGeometry.all(
-                                        Radius.circular(10)
-                                    )
-                                ),
-                              )
-                          ),onPressed: () {
-
-                          }, child: const Text("✅ Biletlerim",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold, fontSize: 18),)),
+                          ),
                         ),
-                        Container(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                              const AllEventTicketsPage(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Etkinlikleri Keşfet",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+
+                        SizedBox(
                           width: 155,
                           height: 50,
-                          child: ElevatedButton(style: ButtonStyle(
-                              backgroundColor: WidgetStatePropertyAll(
-                                  Colors.green
-                              ),
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                              const WidgetStatePropertyAll(Colors.green),
                               shape: WidgetStatePropertyAll(
                                 RoundedRectangleBorder(
-                                    borderRadius: BorderRadiusGeometry.all(
-                                        Radius.circular(10)
-                                    )
+                                  borderRadius: BorderRadius.circular(10),
+                                    side: const BorderSide(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
                                 ),
-                              )
-                          ),onPressed: () {
+                              ),
+                            ),
+                            onPressed: () {
 
-                          }, child: const Text("👤 Profilim",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold, fontSize: 18),)),
+                            },
+                            child: const Text(
+                              "Biletlerim",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(
+                          width: 155,
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                              const WidgetStatePropertyAll(Colors.green),
+                              shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                    side: BorderSide(
+                                      color: Colors.white,
+                                      width: 2,
+                                    )
+                                    ,
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+
+                            },
+                            child: const Text(
+                              "Profilim",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 25),
+
                 Column(
                   children: [
-                    Divider(
+
+                    const Divider(
                       color: Colors.white,
                       thickness: 1,
                       height: 50,
                       indent: 10,
                       endIndent: 10,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10 , right: 10),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Hızlı Kategoriler",style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),),
-                          GestureDetector(
-                              onTap: () {
 
-                              },
-                              child: Text("Tümünü Gör →",style: TextStyle(color: Colors.greenAccent , fontWeight: FontWeight.bold)))
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                        right: 10,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+
+                          const Text(
+                            "Hızlı Kategoriler",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          GestureDetector(
+                            onTap: () {
+
+                            },
+                            child: const Text(
+                              "Tümünü Gör →",
+                              style: TextStyle(
+                                color: Colors.greenAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 15),
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+                    const SizedBox(height: 25),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(10)
-                            )
-                          ),
-                          child: Column(
-                            children: [
-                              ClipRRect(borderRadius: BorderRadius.all(
-                                Radius.circular(20)
-                              ),
-                                child: Image.asset("images/concer.jpg",
+
+                        Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                "images/concer.jpg",
                                 height: 120,
                                 width: 120,
-                                  fit: BoxFit.cover,),
+                                fit: BoxFit.cover,
                               ),
-                              Text("Konser",style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),)
-                            ],
-                          ),
+                            ),
+                            const Text(
+                              "Konser",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)
-                              )
-                          ),
-                          child: Column(
-                            children: [
-                              ClipRRect(borderRadius: BorderRadius.all(
-                                  Radius.circular(20)
+
+                        Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                "images/theatre.jpg",
+                                height: 120,
+                                width: 120,
+                                fit: BoxFit.cover,
                               ),
-                                child: Image.asset("images/theatre.jpg",
-                                  height: 120,
-                                  width: 120,
-                                  fit: BoxFit.cover,),
+                            ),
+                            const Text(
+                              "Tiyatro",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text("Tiyatro",style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),)
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)
-                              )
-                          ),
-                          child: Column(
-                            children: [
-                              ClipRRect(borderRadius: BorderRadius.all(
-                                  Radius.circular(20)
+
+                        Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                "images/standup.jpg",
+                                height: 120,
+                                width: 120,
+                                fit: BoxFit.cover,
                               ),
-                                child: Image.asset("images/standup.jpg",
-                                  height: 120,
-                                  width: 120,
-                                  fit: BoxFit.cover,),
+                            ),
+                            const Text(
+                              "Stand-up",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text("Stand-up",style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),)
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 75),
-                Text("© 2026 Şubilet Tüm Hakları Saklıdır.", style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),)
+
+                const SizedBox(height: 60),
+
+                const Text(
+                  "© 2026 Tüm Hakları Saklıdır.",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),

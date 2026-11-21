@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ticket_project/pages/admin_access_page.dart';
 import 'package:ticket_project/pages/login_page.dart';
 import 'package:ticket_project/services/RegisterService.dart';
 
@@ -21,6 +22,21 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AdminAccessPage()));
+
+          }, icon: Icon(Icons.admin_panel_settings , color: Colors.green,))
+        ],
+      ),
       body: Center(
         child: Stack(
           fit: StackFit.expand,

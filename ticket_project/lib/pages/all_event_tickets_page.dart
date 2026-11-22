@@ -1,6 +1,10 @@
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ticket_project/pages/cart_page.dart';
+
 import 'package:ticket_project/services/EventService.dart';
+import 'package:ticket_project/services/CartService.dart';
 
 class AllEventTicketsPage extends StatefulWidget {
   const AllEventTicketsPage({super.key});
@@ -11,11 +15,15 @@ class AllEventTicketsPage extends StatefulWidget {
 }
 
 class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
+
   final EventService eventService = EventService();
+  final CartService cartService = CartService();
 
   late Future<List<dynamic>> eventFuture;
 
   int selectedCategoryId = 0;
+
+  bool isAddingToCart = false;
 
   final List<Map<String, dynamic>> categories = [
     {"id": 0, "name": "Tümü"},
@@ -55,8 +63,66 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
     return "${eventService.baseUrl}$imageUrl";
   }
 
+  Future<void> addToCart(int ticketId) async {
+
+    if (isAddingToCart) return;
+
+    setState(() {
+      isAddingToCart = true;
+    });
+
+    try {
+
+      final prefs = await SharedPreferences.getInstance();
+
+      final username = prefs.getString("username");
+
+      if (username == null || username.isEmpty) {
+        throw Exception("Kullanıcı bilgisi bulunamadı!");
+      }
+
+      await cartService.addToCart(ticketId, 1);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Etkinlik sepete eklendi!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CartPage(username: username),
+        ),
+      );
+
+    } catch (e) {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Sepete eklenemedi: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+    } finally {
+
+      if (mounted) {
+        setState(() {
+          isAddingToCart = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.white,
 
@@ -76,6 +142,7 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           SizedBox(
             height: 55,
             child: ListView.builder(
@@ -83,6 +150,7 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: categories.length,
               itemBuilder: (context, index) {
+
                 final category = categories[index];
                 final int categoryId = category["id"];
 
@@ -130,6 +198,7 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
             child: FutureBuilder<List<dynamic>>(
               future: eventFuture,
               builder: (context, snapshot) {
+
                 if (snapshot.connectionState ==
                     ConnectionState.waiting) {
                   return const Center(
@@ -164,10 +233,13 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                   padding: const EdgeInsets.all(16),
                   itemCount: events.length,
                   itemBuilder: (context, index) {
+
                     final event = events[index];
 
                     final String imageUrl =
                     getImageUrl(event["imageUrl"]?.toString());
+
+                    final bool soldOut = event["soldOut"] == true;
 
                     return Card(
                       color: Colors.white,
@@ -180,6 +252,7 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+
                           ClipRRect(
                             borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(15),
@@ -204,6 +277,7 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                                   (context, error, stackTrace) {
                                 return Container(
                                   height: 180,
+                                  width: double.infinity,
                                   color: Colors.grey.shade200,
                                   child: const Center(
                                     child: Icon(
@@ -223,6 +297,7 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                               crossAxisAlignment:
                               CrossAxisAlignment.start,
                               children: [
+
                                 Text(
                                   event["name"]?.toString() ?? "",
                                   style: const TextStyle(
@@ -233,6 +308,7 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
 
                                 const SizedBox(height: 12),
 
+                                // TARİH
                                 Row(
                                   children: [
                                     const Icon(
@@ -296,9 +372,10 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                                   mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                                   children: [
+
                                     Flexible(
                                       child: Text(
-                                        "Kapasite: ${event["capacity"] ?? 0}" + " Kişi",
+                                        "Kapasite: ${event["capacity"] ?? 0} Kişi",
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13,
@@ -316,11 +393,9 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                                     ),
 
                                     Text(
-                                      event["soldOut"] == true
-                                          ? "Tükendi"
-                                          : "Satışta",
+                                      soldOut ? "Tükendi" : "Satışta",
                                       style: TextStyle(
-                                        color: event["soldOut"] == true
+                                        color: soldOut
                                             ? Colors.red
                                             : Colors.green,
                                         fontWeight: FontWeight.bold,
@@ -336,9 +411,13 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                                   width: double.infinity,
                                   height: 48,
                                   child: ElevatedButton(
-                                    onPressed: event["soldOut"] == true
+                                    onPressed: soldOut || isAddingToCart
                                         ? null
                                         : () {
+                                      final int ticketId =
+                                      event["id"];
+
+                                      addToCart(ticketId);
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
@@ -351,7 +430,17 @@ class _AllEventTicketsPageState extends State<AllEventTicketsPage> {
                                         BorderRadius.circular(12),
                                       ),
                                     ),
-                                    child: const Text(
+                                    child: isAddingToCart
+                                        ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child:
+                                      CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                        : const Text(
                                       "Bilet Al",
                                       style: TextStyle(
                                         fontSize: 16,

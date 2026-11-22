@@ -37,6 +37,7 @@ class Loginservice {
 
       await prefs.setString("accessToken", accessToken);
       await prefs.setString("refreshToken", refreshToken);
+      await prefs.setString("username", username);
 
       return true;
     }
@@ -64,5 +65,6 @@ class Loginservice {
 
     await prefs.remove("accessToken");
     await prefs.remove("refreshToken");
+    await prefs.remove("username");
   }
 }

@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ticket_project/pages/all_event_tickets_page.dart';
+import 'package:ticket_project/pages/cart_page.dart';
 import 'package:ticket_project/pages/login_page.dart';
 import 'package:ticket_project/services/UserService.dart';
 
@@ -126,7 +127,9 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.only(right: 6),
                       child: IconButton(
                         onPressed: () {
-
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => CartPage(username: widget.username)));
                         },
                         icon: const Icon(
                           Icons.shopping_cart,

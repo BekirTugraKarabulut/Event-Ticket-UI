@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ticket_project/pages/all_event_tickets_page.dart';
 import 'package:ticket_project/pages/cart_page.dart';
 import 'package:ticket_project/pages/login_page.dart';
+import 'package:ticket_project/pages/my_purchases_page.dart';
 import 'package:ticket_project/services/UserService.dart';
 
 class HomePage extends StatefulWidget {
@@ -287,7 +288,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             onPressed: () {
-
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => MyPurchasesPage()));
                             },
                             child: const Text(
                               "Biletlerim",
@@ -455,7 +456,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
 
-                const SizedBox(height: 60),
+                const SizedBox(height: 70),
 
                 const Text(
                   "© 2026 Tüm Hakları Saklıdır.",

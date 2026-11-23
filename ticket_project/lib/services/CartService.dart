@@ -91,4 +91,22 @@ class CartService {
     }
   }
 
+  Future<int> getSumPay(String username) async {
+
+    final token = await getAccessToken();
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/carts/sum/pay/$username"),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return int.parse(response.body);
+    } else {
+      throw Exception("Toplam tutar alınamadı: ${response.body}");
+    }
+  }
+
 }

@@ -19,6 +19,7 @@ class _CartPageState extends State<CartPage> {
   final CartService cartService = CartService();
 
   late Future<List<dynamic>> cartFuture;
+  late Future<int> totalFuture;
 
   int? updatingCartId;
   int? deletingCartId;
@@ -26,7 +27,9 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     super.initState();
+
     cartFuture = cartService.getCartList(widget.username);
+    totalFuture = cartService.getSumPay(widget.username);
   }
 
   String getImageUrl(String? imageUrl) {
@@ -44,6 +47,7 @@ class _CartPageState extends State<CartPage> {
   void refreshCart() {
     setState(() {
       cartFuture = cartService.getCartList(widget.username);
+      totalFuture = cartService.getSumPay(widget.username);
     });
   }
 
@@ -67,6 +71,7 @@ class _CartPageState extends State<CartPage> {
 
       setState(() {
         cartFuture = cartService.getCartList(widget.username);
+        totalFuture = cartService.getSumPay(widget.username);
         updatingCartId = null;
       });
 
@@ -137,6 +142,7 @@ class _CartPageState extends State<CartPage> {
 
       setState(() {
         cartFuture = cartService.getCartList(widget.username);
+        totalFuture = cartService.getSumPay(widget.username);
         deletingCartId = null;
       });
 
@@ -439,6 +445,16 @@ class _CartPageState extends State<CartPage> {
               final String imageUrl =
               getImageUrl(cart["imageUrl"]?.toString());
 
+              final double price = double.tryParse(
+                cart["price"]?.toString() ?? "0",
+              ) ?? 0;
+
+              final int quantity = int.tryParse(
+                cart["quantity"]?.toString() ?? "1",
+              ) ?? 1;
+
+              final double totalPrice = price * quantity;
+
               final int? sepetId = int.tryParse(
                 cart["sepetId"]?.toString() ?? "",
               );
@@ -572,6 +588,62 @@ class _CartPageState extends State<CartPage> {
                             ],
                           ),
 
+                          const SizedBox(height: 15),
+
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Bilet fiyatı",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      "${price.toStringAsFixed(2)} TL",
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Ürün toplamı",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      "${totalPrice.toStringAsFixed(2)} TL",
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
                           const SizedBox(height: 18),
 
                           if (isDeleting)
@@ -593,54 +665,121 @@ class _CartPageState extends State<CartPage> {
 
       bottomNavigationBar: FutureBuilder<List<dynamic>>(
         future: cartFuture,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        builder: (context, cartSnapshot) {
+          if (!cartSnapshot.hasData || cartSnapshot.data!.isEmpty) {
             return const SizedBox.shrink();
           }
 
-          return SafeArea(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PayPage(),
+          return FutureBuilder<int>(
+            future: totalFuture,
+            builder: (context, totalSnapshot) {
+              final bool isLoading =
+                  totalSnapshot.connectionState == ConnectionState.waiting;
+
+              final int total = totalSnapshot.data ?? 0;
+
+              return SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, -3),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.payment),
-                  label: const Text(
-                    "Ödeme Yap",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    ],
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+
+                  child: Row(
+                    children: [
+
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Toplam Tutar",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
+                            ),
+
+                            const SizedBox(height: 5),
+
+                            if (isLoading)
+                              const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.green,
+                                ),
+                              )
+                            else if (totalSnapshot.hasError)
+                              const Text(
+                                "Hesaplanamadı",
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            else
+                              Text(
+                                "$total TL",
+                                style: const TextStyle(
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: SizedBox(
+                          height: 55,
+                          child: ElevatedButton.icon(
+                            onPressed: isLoading || totalSnapshot.hasError
+                                ? null
+                                : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PayPage(username: widget.username),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.payment),
+                            label: const Text(
+                              "Ödeme Yap",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Colors.grey,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),

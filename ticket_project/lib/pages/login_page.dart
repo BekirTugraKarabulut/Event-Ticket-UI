@@ -107,11 +107,14 @@ class _LoginPageState extends State<LoginPage> {
                          bool response = await loginService.login(username: usernameController.text, password: passwordController.text);
 
                          if(response){
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Giriş Başarılı"),));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Giriş Başarılı" , style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),),
+                              backgroundColor: Colors.green,
+                              ));
                               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(username: usernameController.text)));
                          }else{
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Giriş Başarısız"),
-                           action: SnackBarAction(label: "Tamam", onPressed: (){}),
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Giriş Başarısız" , style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold),),
+                           backgroundColor: Colors.red,
+                           action: SnackBarAction(label: "Tamam", textColor: Colors.white, onPressed: (){}),
                            ));
                            return;
                          }

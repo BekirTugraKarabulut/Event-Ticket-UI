@@ -28,4 +28,33 @@ class PurchasedService {
       );
     }
   }
+
+  Future<String> getAccessCodeByPurchasedId(int purchaseId) async {
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("accessToken");
+
+    if (token == null) {
+      throw Exception("Oturum bilgisi bulunamadı.");
+    }
+
+    final response = await http.get(
+      Uri.parse(
+        "$baseUrl/purchased/access-code/$purchaseId",
+      ),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return response.body.replaceAll('"', '');
+    }
+
+    throw Exception(
+      "Giriş kodu alınamadı: ${response.statusCode}",
+    );
+  }
+
 }

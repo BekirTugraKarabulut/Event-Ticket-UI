@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:ticket_project/pages/access_page.dart';
 import 'package:ticket_project/services/PurchasedService.dart';
 
 class MyPurchasesPage extends StatefulWidget {
@@ -193,7 +194,7 @@ class _MyPurchasesPageState extends State<MyPurchasesPage> {
                                 )
                               )
                             ),onPressed: (){
-
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => AccessPage(purchaseId: purchase["purchaseId"])));
                             }, child: Text("QR Giriş" , style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold , fontSize: 18),)),
                           )
                         ],
